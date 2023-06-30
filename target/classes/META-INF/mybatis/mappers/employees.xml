@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!-- copy qualified name 눌러서 복붙 -->
+<mapper namespace="kr.co.jhta.hr.mapper.EmployeeMapper">
+	
+	<!-- 
+		모든 직원 목록 조회하기
+			List<Employee> getAllEmployees()
+			SQL 매핑
+				id : getAllEmployees
+				parameterType : 없어
+				resultType : Employee(한 행에 관련된 것만 적으면 된다.)
+	 -->
+	 <select id="getAllEmployees" resultType="Emp">
+	 	select employee_id		as id,
+	 		   first_name		as firstName,
+	 		   last_name		as lastName,
+	 		   email,
+	 		   phone_number		as phoneNumber,
+	 		   hire_date		as hireDate,
+	 		   job_id			as "job.id",
+	 		   salary,
+	 		   commission_pct	as commissionPct,
+	 		   manager_id		as "manager.id",
+	 		   department_id	as "department.id"
+	    from employees
+	  	order by employee_id asc
+	 </select>
+	 
+	 <!-- 
+	 	 직원 상세정보 정의하기
+	 	 Employee getEmployeeDetail(int empId)
+	  -->
+	 <select id="getEmployeeDetail" parameterType="int" resultType="Emp">
+	 	select E.employee_id	as id,
+	 		   E.first_name		as firstName,
+	 		   E.last_name		as lastName,
+	 		   E.email,
+	 		   E.phone_number	as phoneNumber,
+	 		   E.hire_date		as hireDate,
+	 		   E.job_id			as "job.id",
+	 		   J.job_title 		 as "job.title",
+	 		   E.salary,
+	 		   E.commission_pct	as commissionPct,
+	 		   E.manager_id		as "manager.id",
+	 		   M.first_name     as "manager.firstName",
+	 		   E.department_id	as "department.id",
+	 		   M.last_name     as "manager.lastName",
+	 		   D.department_name as "department.name"
+	    from employees E, Departments D, Jobs J, employees M
+	    where E.department_id = D.department_id(+)
+	    and E.job_id = J.job_id
+	    and E.manager_id = M.employee_id(+)
+	    and E.employee_id = #{value}
+	    
+	 </select>
+	 
+	 <select id="getEmployeeById" parameterType="int" resultType="Emp">
+	 	select employee_id		as id,
+	 		   first_name		as firstName,
+	 		   last_name		as lastName,
+	 		   email,
+	 		   phone_number		as phoneNumber,
+	 		   hire_date		as hireDate,
+	 		   job_id			as "job.id",
+	 		   salary,
+	 		   commission_pct	as commissionPct,
+	 		   manager_id		as "manager.id",
+	 		   department_id	as "department.id"
+	 	from employees
+	 	where employee_id = #{value}
+	 </select>
+	 
+	  <!-- 
+	  	resultMap
+	 		컬럼명과 객체의 멤버변수명을 매핑시켜놨다
+	  -->
+	  <resultMap type="Emp" id="EmpResultMap">
+	  	<id column="EMPLOYEE_ID" property="id"/>
+	  	<result column="FIRST_NAME" property="firstName"/>
+	  	<result column="LAST_NAME" property="lastName"/>
+	  	<result column="EMAIL" property="email"/>
+	  	<result column="PHONE_NUMBER" property="phoneNumber"/>
+	  	<result column="HIRE_DATE" property="hireDate"/>
+	  	<result column="SALARY" property="salary"/>
+	  	<result column="COMMISSION_PCT" property="commissionPct"/>
+	  	<association property="job" 
+	  				 select="kr.co.jhta.hr.mapper.JobMapper.getJobById" 
+	  				 column="JOB_ID"/>
+	  	<association property="manager" 
+	  				 select="getEmployeeById" 
+	  				 column="MANAGER_ID"/>
+	  	<association property="department" 
+	  				 select="kr.co.jhta.hr.mapper.DepartmentMapper.getDepartmentById"
+	  				 column="DEPARTMENT_ID"/>
+	  </resultMap>
+	  
+	 <select id="getEmployeeDetailById" parameterType="int" resultMap="EmpResultMap">
+	 	select *
+	 	from employees
+	 	where employee_id = #{value}
+	 </select>
+
+	 
+</mapper>
